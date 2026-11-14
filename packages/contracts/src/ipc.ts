@@ -1142,6 +1142,8 @@ export interface DesktopBridge {
     position?: { x: number; y: number },
     source?: ContextMenuSource,
   ) => Promise<T | null>;
+  /** Whether Ctrl (Cmd on macOS) was held for the last item chosen in `showContextMenu`. */
+  contextMenuSelectedWithModifier?: () => boolean;
   receiveProviderAuthCallback: (authorizationUrl: string) => Promise<string>;
   cancelProviderAuthCallback: (authorizationUrl: string) => Promise<void>;
   openExternal: (url: string) => Promise<boolean>;

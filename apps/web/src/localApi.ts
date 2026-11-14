@@ -6,7 +6,7 @@ import type {
 } from "@t3tools/contracts";
 
 import { isWebUrl } from "./browser/webUrl";
-import { requestConfirmDialog } from "./confirmDialog";
+import { noteConfirmBypassGesture, requestConfirmDialog } from "./confirmDialog";
 import { dismissContextMenu, showContextMenuFallback } from "./contextMenuFallback";
 import { readBrowserClientSettings, writeBrowserClientSettings } from "./clientPersistenceStorage";
 
@@ -52,8 +52,13 @@ export function createLocalApi(): LocalApi {
         position?: { x: number; y: number },
         source?: ContextMenuSource,
       ): Promise<T | null> => {
-        if (window.desktopBridge) {
-          return window.desktopBridge.showContextMenu(items, position, source) as Promise<T | null>;
+        const bridge = window.desktopBridge;
+        if (bridge) {
+          const selected = await bridge.showContextMenu(items, position, source);
+          noteConfirmBypassGesture(
+            selected !== null && bridge.contextMenuSelectedWithModifier?.() === true,
+          );
+          return selected;
         }
         return showContextMenuFallback(items, position);
       },

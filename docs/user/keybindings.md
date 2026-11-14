@@ -182,6 +182,10 @@ seconds after the latest action. Right after an action, the shortcut works even
 in a text field such as the composer. Once you type or press another key, the
 field gets its own undo back. Terminals always keep their native shortcut.
 
+On web and desktop, hold `Ctrl` (`Cmd` on macOS) while you click a button or menu item
+that asks for confirmation, such as **Delete thread**, to skip the confirmation dialog.
+Shortcuts still show it.
+
 `navigation.back` (`mod+[` by default) and `navigation.forward` (`mod+]`) move
 through the pages you have visited, like a browser's back and forward buttons.
 

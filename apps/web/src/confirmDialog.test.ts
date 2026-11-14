@@ -1,7 +1,8 @@
-import { beforeEach, describe, expect, it } from "vite-plus/test";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import {
   completeConfirmDialogClose,
+  noteConfirmBypassGesture,
   readConfirmDialogState,
   requestConfirmDialog,
   resetConfirmDialogForTests,
@@ -83,5 +84,27 @@ describe("confirm dialog coordinator", () => {
     expect(readConfirmDialogState()).toEqual({ status: "idle" });
     unregister();
     return expect(confirmation).resolves.toBe(true);
+  });
+
+  it("accepts without a dialog only within the modifier click's task", async () => {
+    vi.useFakeTimers();
+    const unregister = mountHost();
+    try {
+      noteConfirmBypassGesture(false);
+      requireConfirmation(requestConfirmDialog("Delete the thread?"));
+      respondToConfirmDialog(false);
+      completeConfirmDialogClose();
+
+      noteConfirmBypassGesture(true);
+      await expect(requestConfirmDialog("Delete the thread?")).resolves.toBe(true);
+      expect(readConfirmDialogState()).toEqual({ status: "idle" });
+
+      await vi.runAllTimersAsync();
+      requireConfirmation(requestConfirmDialog("Delete the thread?"));
+      expect(readConfirmDialogState().status).toBe("confirming");
+    } finally {
+      unregister();
+      vi.useRealTimers();
+    }
   });
 });

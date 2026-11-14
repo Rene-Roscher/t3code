@@ -48,6 +48,12 @@ export class ElectronMenuOperationError extends Schema.TaggedError<ElectronMenuO
   }
 }
 
+export interface ElectronContextMenuSelection {
+  readonly id: string;
+  /** Ctrl (Cmd on macOS) was held when the item was chosen. */
+  readonly modifierHeld: boolean;
+}
+
 export class ElectronMenu extends Context.Service<
   ElectronMenu,
   {
@@ -56,7 +62,7 @@ export class ElectronMenu extends Context.Service<
     ) => Effect.Effect<void>;
     readonly showContextMenu: (
       input: ElectronMenuContextInput,
-    ) => Effect.Effect<Option.Option<string>>;
+    ) => Effect.Effect<Option.Option<ElectronContextMenuSelection>>;
     readonly popupTemplate: (input: ElectronMenuTemplateInput) => Effect.Effect<void>;
   }
 >()("@t3tools/desktop/electron/ElectronMenu") {}
@@ -142,7 +148,7 @@ export const make = Effect.gen(function* () {
 
   const buildTemplate = (
     entries: readonly ContextMenuItem[],
-    complete: (selectedItemId: Option.Option<string>) => void,
+    complete: (selection: Option.Option<ElectronContextMenuSelection>) => void,
   ): Electron.MenuItemConstructorOptions[] => {
     const template: Electron.MenuItemConstructorOptions[] = [];
     let hasInsertedDestructiveSeparator = false;
@@ -175,7 +181,13 @@ export const make = Effect.gen(function* () {
       if (item.children && item.children.length > 0) {
         itemOption.submenu = buildTemplate(item.children, complete);
       } else {
-        itemOption.click = () => complete(Option.some(item.id));
+        itemOption.click = (_menuItem, _window, event) =>
+          complete(
+            Option.some({
+              id: item.id,
+              modifierHeld: (platform === "darwin" ? event.metaKey : event.ctrlKey) === true,
+            }),
+          );
       }
       if (item.destructive && (!item.children || item.children.length === 0)) {
         const destructiveIcon = getDestructiveMenuIcon();
@@ -226,7 +238,7 @@ export const make = Effect.gen(function* () {
           }).pipe(Effect.orDie);
     }),
     showContextMenu: Effect.fn("ElectronMenu.showContextMenu")(function (input) {
-      return Effect.callback<Option.Option<string>>((resume) => {
+      return Effect.callback<Option.Option<ElectronContextMenuSelection>>((resume) => {
         const normalizedItems = normalizeContextMenuItems(input.items);
         if (normalizedItems.length === 0) {
           resume(Effect.succeedNone);
@@ -234,12 +246,12 @@ export const make = Effect.gen(function* () {
         }
 
         let completed = false;
-        const complete = (selectedItemId: Option.Option<string>) => {
+        const complete = (selection: Option.Option<ElectronContextMenuSelection>) => {
           if (completed) {
             return;
           }
           completed = true;
-          resume(Effect.succeed(selectedItemId));
+          resume(Effect.succeed(selection));
         };
 
         try {

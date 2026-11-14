@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { isMacPlatform } from "@t3tools/shared/keybindings";
 
 import {
   completeConfirmDialogClose,
@@ -84,6 +85,9 @@ export function ConfirmDialogHost() {
           ) : null}
         </AlertDialogHeader>
         <AlertDialogFooter>
+          <p className="self-center text-xs text-muted-foreground pointer-coarse:hidden sm:me-auto">
+            Hold {isMacPlatform(navigator.platform) ? "⌘" : "Ctrl"} when clicking to skip this
+          </p>
           <AlertDialogClose render={<Button variant="outline" />}>Cancel</AlertDialogClose>
           {focusConfirm && confirmVariant === "default" ? (
             <AlertDialogAction onClick={onConfirm}>Confirm</AlertDialogAction>

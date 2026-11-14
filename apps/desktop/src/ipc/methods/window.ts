@@ -329,7 +329,7 @@ export const setTheme = DesktopIpc.makeIpcMethod({
 export const showContextMenu = DesktopIpc.makeIpcMethod({
   channel: IpcChannels.CONTEXT_MENU_CHANNEL,
   payload: ContextMenuInput,
-  result: Schema.NullOr(Schema.String),
+  result: Schema.NullOr(Schema.Struct({ id: Schema.String, modifierHeld: Schema.Boolean })),
   handler: Effect.fn("desktop.ipc.window.showContextMenu")(function* (input) {
     const electronMenu = yield* ElectronMenu.ElectronMenu;
     const electronWindow = yield* ElectronWindow.ElectronWindow;
@@ -338,13 +338,13 @@ export const showContextMenu = DesktopIpc.makeIpcMethod({
       return null;
     }
 
-    const selectedItemId = yield* electronMenu.showContextMenu({
+    const selection = yield* electronMenu.showContextMenu({
       window: window.value,
       items: input.items,
       position: Option.fromNullishOr(input.position),
       source: Option.fromNullishOr(input.source),
     });
-    return Option.getOrNull(selectedItemId);
+    return Option.getOrNull(selection);
   }),
 });
 
