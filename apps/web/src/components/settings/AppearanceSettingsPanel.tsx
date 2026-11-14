@@ -348,6 +348,31 @@ export function AppearanceSettingsPanel() {
             />
           }
         />
+        <SettingsRow
+          {...searchableSetting("cite-selection")}
+          description="Show a Cite button when you select text in an agent's reply."
+          resetAction={
+            settings.citeSelectionEnabled !== DEFAULT_UNIFIED_SETTINGS.citeSelectionEnabled ? (
+              <SettingResetButton
+                label="cite on selection"
+                onClick={() =>
+                  updateSettings({
+                    citeSelectionEnabled: DEFAULT_UNIFIED_SETTINGS.citeSelectionEnabled,
+                  })
+                }
+              />
+            ) : null
+          }
+          control={
+            <Switch
+              checked={settings.citeSelectionEnabled}
+              onCheckedChange={(checked) =>
+                updateSettings({ citeSelectionEnabled: Boolean(checked) })
+              }
+              aria-label="Cite on selection"
+            />
+          }
+        />
         <AdvancedSettings
           targetIds={[
             searchableSetting("panel-animations").id,

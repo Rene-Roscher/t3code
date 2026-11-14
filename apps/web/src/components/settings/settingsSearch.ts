@@ -368,6 +368,12 @@ export const SETTINGS_SEARCH_ITEMS = [
     searchTerms: ["latex tex katex equations formulas markdown"],
   },
   {
+    id: "cite-selection",
+    title: "Cite on selection",
+    to: "/settings/appearance",
+    searchTerms: ["quote citation select text double click popup button reply"],
+  },
+  {
     id: "panel-animations",
     title: "Panel animations",
     to: "/settings/appearance",
